@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Details</title>
+</head>
+
+<body>
+    {% macro catch(on_exception) %}
+    {{ handle_catch(caller, on_exception) }}
+    {% endmacro %}
+    {%- macro random_int(len) -%}
+    {%- for _ in range(len) -%}
+    {{ range(10) | random }}
+    {%- endfor -%}
+    {%- endmacro -%}
+
+    <h1 class="text-center">Details of Question with Id: {{question_data['Question_ID']}} </h1>
+    <!-- <div style="display: inline-block;"> -->
+    <a onclick="back()" class="mx-5 btn btn-info">BACK</a>
+    <!-- ========================================================ADD TAGS MODAL START========================== -->
+    <a type="button" class=" mx-5 btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal"
+        style="float: right;">ADD TAGS </a>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Tag for the Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-1">
+                            <label for="formGroupExampleInput" class="form-label">Tag Name</label>
+                            <!-- <button type="button" onclick="add_tag()" class="btn-sm btn-primary my-1" style="float: right;">ADD </button> -->
+                            <input type="text" class="form-control" id="tag_input" name="Chapter_Name"
+                                placeholder="Tag Name">
+                        </div>
+                    </div>
+                    <div id="tags_question">
+                        {% call catch('') %}
+                        {% set list1 = question_data['TAG_Ids'].split(',') %}
+                        {% for item in list1%}
+                        {% if item!='' %}
+                        {% set unique_id_imp =random_int(10)%}
+                        <span id="{{unique_id_imp}}" class="badge bg-primary mx-1">#{{item}}<i
+                                onclick="remove_tag('{{unique_id_imp}}','{{item}}')" class="fa fa-times mx-1"
+                                style="cursor: pointer;"></i></span>
+                        {% endif %}
+                        {% endfor %}
+                        {% endcall %}
+                    </div>
+
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" onclick="add_tag()" class="btn btn-primary">ADD TAG</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ========================================================ADD TAGS MODAL START========================== -->
+
+
+    <!-- <a id="delete" class="mx-5 my-1 btn btn-secondary">DELETE</a> -->
+    <form action="/question/{{chapter_key}}/{{question_key}}" method="POST">
+        <center>
+            <div class="mx-5">
+                <div class="mb-3">
+                    <label for="formGroupExampleInput" class="form-label"><b>QUESTION:-</b></label>
+
+                    <input type="text" class="form-control" name="Question" value="{{question_data['Question']}}">
+                </div>
+                <div class="mb-3">
+
+                    <label for="formGroupExampleInput" class="form-label"><b>QUESTION TYPE:-</b></label>
+                    <select onchange="QuestionType()" name="Question_Type" id="question_type_value"
+                        class="form-control">
+                        <option value="{{question_data['Question_Type']}}">{{question_data['Question_Type']}}</option>
+                        {% for item in ques_types.each()%}
+                        {% if item.val()["type"]!=question_data['Question_Type'] %}
+                        <option value="{{item.val()['type']}}">{{item.val()["type"]}}</option>
+                        <!-- <option value="Single Correct">Single Correct</option>
+                        <option value="Multiple Correct">Multiple Correct</option> -->
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3" style="display: none;">
+                    <label for="formGroupExampleInput" class="form-label"><b>QUESTION IDS:-</b></label>
+                    <input type="text" class="form-control" id="tagids" name="Question_Tag_Ids"
+                        value="{{question_data['TAG_Ids']}}">
+                </div>
+                <div class="mb-3" style="display: none;">
+                    <label for="formGroupExampleInput" class="form-label"><b>OPTION IDS:-</b></label>
+                    <input type="text" class="form-control" id="optids" name="Options_Tag_Ids"
+                        value='{{question_data["OPT_JSON"]}}'>
+                </div>
+                <!-- =================SINGLE CORRECT START===================================== -->
+                <div class="mb-3" id="ques_options_single" style="display: none;">
+                    <label for="formGroupExampleInput" class="form-label"><b>OPTIONS(SINGLE CORRECT)<i
+                                class="fa  fa-plus-circle mx-1" style="cursor: pointer;font-size:20px"
+                                data-bs-toggle="modal" data-bs-target="#exampleModal1"></i></b></label>
+                    {% call catch('') %}
+                    {% for key,value in question_data['OPT_JSON'].items()%}
+                    {% set unique_id_imp =random_int(8)%}
+                    {% if value!="" %}
+                    {% set value_opt =value["opt"] %}
+                    {% if value["ans"]=="true"%}
+                    <div id="div_{{key}}" class="form-check">
+                        <input class="form-check-input mb" type="radio" name="flexRadioDefault" id="{{key}}"
+                            value="{{value_opt}}" checked>
+                        <label class="form-check-label form-control" id="${unique_id_imp}" for="flexRadioDefault"
+                            style="width:95%;display:inline-block;text-align:left">{{value_opt}}</label>
+                        <i class="fa fa-times-circle" aria-hidden="true" onclick="remove_opt('{{key}}')"
+                            style="font-size: 20px;cursor:pointer"></i>
+                    </div>
+                    {% else %}
+                    <div id="div_{{key}}" class="form-check">
+                        <input class="form-check-input mb" type="radio" name="flexRadioDefault" id="{{key}}"
+                            value="{{value_opt}}">
+                        <label class="form-check-label form-control" id="${unique_id_imp}" for="flexRadioDefault"
+                            style="width:95%;display:inline-block;text-align:left">{{value_opt}}</label>
+                        <i class="fa fa-times-circle" aria-hidden="true" onclick="remove_opt('{{key}}')"
+                            style="font-size: 20px;cursor:pointer"></i>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    {% endcall %}
+                </div>
+                <!-- =================SINGLE CORRECT END===================================== -->
+                <!-- =================MULTIPLE CORRECT START===================================== -->
+                <!-- <div class="mb-3" id="ques_options_multiple" style="display: none;">
+                    <label for="formGroupExampleInput" class="form-label"><b>OPTIONS(MULTIPLE CORRECT)<i
+                                class="fa  fa-plus-circle mx-1" style="cursor: pointer;font-size:20px"
+                                data-bs-toggle="modal" data-bs-target="#exampleModal1"></i></b></label>
+                    {% call catch('') %}
+                    {% for key,value in question_data['OPT_JSON'].items()%}
+                    {% set unique_id_imp =random_int(8)%}
+                    {% if value!="" %}
+                    {% set value_opt =value["opt"] %}
+                    <div id="div_{{key}}" class="form-check">
+                        <input class="form-check-input mb" type="radio" name="flexRadioDefault" id="{{key}}"
+                            value="{{value_opt}}">
+                        <label class="form-check-label form-control" id="${unique_id_imp}" for="flexRadioDefault"
+                            style="width:95%;display:inline-block;text-align:left">{{value_opt}}</label>
+                        <i class="fa fa-times-circle" aria-hidden="true" onclick="remove_opt('{{key}}')"
+                            style="font-size: 20px;cursor:pointer"></i>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endcall %}
+                </div> -->
+                <!-- =================MULTIPLE CORRECT END===================================== -->
+                <!-- =================TRUE & FALSE START===================================== -->
+                <!-- <div class="mb-3" id="ques_options_single" style="display: none;">
+                    <label for="formGroupExampleInput" class="form-label"><b>OPTIONS(TRUE & FALSE)<i
+                        class="fa  fa-plus-circle mx-1" style="cursor: pointer;font-size:20px"
+                        data-bs-toggle="modal" data-bs-target="#exampleModal1"></i></b></label>
+                        {% call catch('') %}
+                        {% for key,value in question_data['OPT_JSON'].items()%}
+                        {% set unique_id_imp =random_int(8)%}
+                        {% if value!=""  %}
+                        {% set value_opt =value["opt"] %}
+                        <div id="div_{{key}}" class="form-check">
+                            <input class="form-check-input mb" type="radio" name="flexRadioDefault" id="{{key}}" value="{{value_opt}}" >
+                            <label class="form-check-label form-control" id="${unique_id_imp}" for="flexRadioDefault" style="width:95%;display:inline-block;text-align:left">{{value_opt}}</label>
+                            <i class="fa fa-times-circle"  aria-hidden="true" onclick = "remove_opt('{{key}}')" style="font-size: 20px;cursor:pointer"></i>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% endcall %}
+                    </div> -->
+                <!-- =================TRUE & FALSE END===================================== -->
+            </div>
+            <button type="submit" class="btn btn-danger">SAVE CHANGES</button>
+        </center>
+    </form>
+    <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel1">Add New Option</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-1">
+                        <input type="text" class="form-control" id="opt_input" placeholder="Option">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" onclick="add_option()" class="btn btn-primary">ADD
+                        OPTION</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script defer>
+    var tag_id_list = [];
+    var options = {
+
+    }
+    console.log(options)
+
+    const new_arr = document.getElementById("tagids").value.split(",")
+    for (var i = 0; i < new_arr.length; i++) {
+        if (new_arr[i] != " " && new_arr[i] != "") {
+            tag_id_list.push(new_arr[i])
+        }
+    }
+    function makeid(length) {
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
+    }
+
+
+    function back() {
+        //window.history.back()
+        window.location.assign("/chapter/{{chapter_key}}");
+    }
+
+    function add_tag() {
+        unique_id = makeid(5)
+        tag_div = document.getElementById("tags_question");
+        tag_input = document.getElementById("tag_input").value
+        tag_div.innerHTML += ` <span id="${unique_id}" class="badge bg-primary mx-1">#${tag_input}<i  onclick = "remove_tag('${unique_id}','${tag_input}')" class="fa fa-times mx-1" style = "cursor: pointer;"></i></span>`
+        tag_id_list.push(tag_input);
+        document.getElementById("tagids").value += tag_input + ',';
+        document.getElementById("tag_input").value = '';
+
+
+    }
+
+    function remove_tag(tag_id, tag_input) {
+        document.getElementById(tag_id).remove()
+        index = tag_id_list.indexOf(tag_input)
+        console.log(index)
+        console.log(typeof tag_input)
+        if (index > -1) {
+            tag_id_list.splice(index, 1);
+        }
+        document.getElementById("tagids").value = tag_id_list + ',';
+    }
+
+    function add_option() {
+        opt_id = makeid(10)
+        input_option = document.getElementById("opt_input").value
+        div_options = document.getElementById("ques_options_single")
+        div_options.innerHTML += ` <div id="div_${opt_id}" class="form-check">
+            <input class="form-check-input mb" type="radio" value="${input_option}" name="flexRadioDefault" id="${opt_id}"
+                >
+            <label class="form-check-label form-control" for="flexRadioDefault" style="width:95%;display:inline-block;text-align:left">${input_option}</label>
+            <i class="fa fa-times-circle"  aria-hidden="true" onclick = "remove_opt('${opt_id}')" style="font-size: 20px;cursor:pointer"></i>
+        </div> 
+        `
+        options[opt_id.toString()] = {
+            "opt": input_option,
+            "ans": "false"
+        }
+        document.getElementById("optids").value = JSON.stringify(options);
+        document.getElementById("opt_input").value = ""
+        //===============================================================================
+        var radios = document.querySelectorAll('input[type=radio][class="form-check-input mb"]');
+        radios.forEach(radio => radio.addEventListener('change', () => {
+            temp = radio.id
+            radios.forEach(radio_temp => {
+                if (radio_temp.id == temp) {
+                    options[temp]["ans"] = "true"
+
+                }
+                else {
+                    options[radio_temp.id]["ans"] = "false"
+
+                }
+            })
+            document.getElementById("optids").value = JSON.stringify(options);
+
+
+        }
+        ));
+        //=========================================================================
+    }
+
+
+    function remove_opt(key) {
+        document.getElementById("div_" + key).remove()
+        delete options[key]
+        document.getElementById("optids").value = JSON.stringify(options);
+    }
+    /*function remove_opt(opt_id,opt_input) {
+        document.getElementById(opt_id).remove()
+        index_ = opt_ids_list.indexOf(opt_input)
+        console.log(index_)
+        if (index_ > -1) {
+            opt_ids_list.splice(index_, 1);
+        }
+        document.getElementById("optids").value = opt_ids_list + ',';
+    }*/
+
+    function QuestionType() {
+        q_type = document.getElementById("question_type_value").value
+        if (q_type == "Single Correct") {
+            document.getElementById("ques_options_single").style.display = "block";
+        }
+        else if (q_type == "Multiple Correct"){
+            
+            document.getElementById("ques_options_multiple").style.display = "block";
+            document.getElementById("ques_options_single").style.display = "none";
+        }
+        else {
+            document.getElementById("ques_options_multiple").style.display = "none";
+            document.getElementById("ques_options_single").style.display = "none";
+
+        }
+    }
+    if (document.getElementById("question_type_value").value == "Single Correct" || document.getElementById("question_type_value").value == "Multiple Correct") {
+        document.getElementById("ques_options_single").style.display = "block";
+    }
+    //s=============================================
+    ms = document.getElementsByClassName("mb")
+    console.log(ms)
+    for (var i = 0; i < ms.length; i++) {
+        options[ms[i].id.toString()] = {
+            "opt": ms[i].value,
+            "ans": "false"
+        }
+    }
+    var radios = document.querySelectorAll('input[type=radio][class="form-check-input mb"]');
+    radios.forEach(radio => radio.addEventListener('change', () => {
+        temp = radio.id
+        radios.forEach(radio_temp => {
+            if (radio_temp.id == temp) {
+                options[temp]["ans"] = "true"
+
+            }
+            else {
+                options[radio_temp.id]["ans"] = "false"
+
+            }
+        })
+        document.getElementById("optids").value = JSON.stringify(options);
+
+
+    }
+    ));
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+
+</html>

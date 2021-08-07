@@ -1,0 +1,76 @@
+<html>
+ 
+    <body>
+    <div id="container">
+    <p>Select your preferred contact method:</p>
+    <div>
+        <input type="checkbox" id="qw" name="contact" value="email" class="opt mb">
+        <label >Email</label>
+ 
+        <input type="checkbox" id="qw1" name="contact" value="phone" class="opt mb">
+        <label >Phone</label>
+ 
+        <input type="checkbox" id="qw2" name="contact" value="mail" class="opt mb">
+        <label >Mail</label>
+    </div>
+    </div>
+    <input type="text" id="mbsa" style="display:none">
+    </body>
+ 
+    <script>
+    var radios = document.querySelectorAll('input[type=checkbox][class="opt mb"]');
+    radios.forEach(radio => radio.addEventListener('change', () => {
+        temp = radio.id
+        if(radio.checked){
+            options[temp]["ans"] = "true"
+        }
+        else{
+            options[temp]["ans"] = "false"
+            
+        }
+        //temp = radio.id
+        //radios.forEach(radio_temp =>{
+        //    if(radio_temp.id==temp){
+        //      options[temp]["ans"] = "true"
+        //      
+        //    }
+        //    else{
+        //        options[radio_temp.id]["ans"] = "false"
+//
+        //    }
+        //})
+
+    }
+    ));
+    options = {
+        "qw":
+        {
+            "opt":"email",
+            "ans":"false"
+        },
+        "qw1":
+        {
+            "opt":"phone",
+            "ans":"false"
+        },
+        "qw2":
+        {
+            "opt":"mail",
+            "ans":"false"
+        }
+        
+    }
+
+    optt = [options]
+    document.getElementById("mbsa").value = JSON.stringify(options) ;
+
+    optt.forEach(obj => {
+        console.log(obj["qw"])
+    })
+   
+
+    
+  
+    </script>
+ 
+</html>
